@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 class Scholarships(models.Model):
+    id = models.AutoField(primary_key=True)
     scholarship_name = models.CharField(max_length=64)
     about_scholarship = models.TextField()  
     eligibility_scholarship = models.TextField()

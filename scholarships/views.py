@@ -1,9 +1,8 @@
-
-from django.shortcuts import render
-from .models import Scholarships
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from .models import Scholarships
 
 @csrf_exempt
 def scholarship_list(request):
@@ -17,7 +16,10 @@ def scholarship_list(request):
             "about": scholarship.about_scholarship,
             "eligibility": scholarship.eligibility_scholarship,
             "amount": scholarship.amount_scholarship,
-            "lastDate": scholarship.lastdate_scholarship
+            "lastDate": scholarship.lastdate_scholarship,
+            "gender" : scholarship.gender,
+            "course" : scholarship.course,
+            "institution" : scholarship.institution
         }
         scholarships_list.append(scholarship_dict)
 
@@ -90,3 +92,67 @@ def add_scholarship(request):
     else:
         # Return an error response for unsupported request methods
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
+
+@csrf_exempt
+def scholarship_detail(request, id):
+    try:
+        scholarship = Scholarships.objects.get(id=id)
+        if request.method == 'PUT':
+            data = json.loads(request.body)
+            scholarship.scholarship_name = data.get('name', scholarship.scholarship_name)
+            scholarship.about_scholarship = data.get('about', scholarship.about_scholarship)
+            scholarship.eligibility_scholarship = data.get('eligibility', scholarship.eligibility_scholarship)
+            scholarship.amount_scholarship = data.get('amount', scholarship.amount_scholarship)
+            scholarship.lastdate_scholarship = data.get('lastDate', scholarship.lastdate_scholarship)
+            scholarship.gender =data.get('gender',scholarship.gender)
+            scholarship.course =data.get('course',scholarship.course)
+            scholarship.institution = data.get('institution',scholarship.institution)           
+            scholarship.save()
+            return JsonResponse({'message': 'Scholarship updated successfully'})
+        else:
+            # Serialize the scholarship data into JSON format
+            data = {
+                "id": scholarship.id,
+                "name": scholarship.scholarship_name,
+                "about": scholarship.about_scholarship,
+                "eligibility": scholarship.eligibility_scholarship,
+                "amount": scholarship.amount_scholarship,
+                "lastDate": scholarship.lastdate_scholarship,
+                "gender":scholarship.gender,
+                "course":scholarship.course,
+                "institution":scholarship.institution
+            }
+            return JsonResponse(data)
+    except Scholarships.DoesNotExist:
+        return JsonResponse({'error': 'Scholarship not found'}, status=404)
+
+@csrf_exempt
+def delete_scholarship(request, id):
+    if request.method == 'DELETE':
+        try:
+            scholarship = Scholarships.objects.get(id=id)
+            scholarship.delete()
+            return JsonResponse({'message': 'Scholarship deleted successfully'})
+        except Scholarships.DoesNotExist:
+            return JsonResponse({'error': 'Scholarship not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@csrf_exempt
+def edit_scholarship(request, id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        scholarship = get_object_or_404(Scholarships, id=id)
+        # Update scholarship details based on data
+        scholarship.scholarship_name = data.get('scholarship_name')
+        scholarship.about_scholarship = data.get('about_scholarship')
+        scholarship.eligibility_scholarship = data.get('eligibility_scholarship')
+        scholarship.amount_scholarship = data.get('amount_scholarship')
+        scholarship.lastdate_scholarship = data.get('lastdate_scholarship')
+        scholarship.gender = data.get('gender')
+        scholarship.course = data.get('course')
+        scholarship.institution = data.get('institution')
+        scholarship.save()
+        return JsonResponse({'message': 'Scholarship updated successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
