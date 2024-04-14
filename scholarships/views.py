@@ -19,7 +19,10 @@ def scholarship_list(request):
             "lastDate": scholarship.lastdate_scholarship,
             "gender" : scholarship.gender,
             "course" : scholarship.course,
-            "institution" : scholarship.institution
+            "institution" : scholarship.institution,
+            "documents":scholarship.documents_required.split(",") if scholarship.documents_required else [],
+            "website":scholarship.website,
+
         }
         scholarships_list.append(scholarship_dict)
 
@@ -51,7 +54,16 @@ def filter_scholarships(request):
         if institution:
             filtered_scholarships = filtered_scholarships.filter(institution__iexact=institution)
         
-        scholarships_data = [{'id': scholarship.id, 'name': scholarship.scholarship_name, 'amount': scholarship.amount_scholarship} for scholarship in filtered_scholarships]
+        scholarships_data = [{'id': scholarship.id, 
+            'name': scholarship.scholarship_name,
+            'about': scholarship.about_scholarship,
+            'eligibility': scholarship.eligibility_scholarship,
+            'amount': scholarship.amount_scholarship,
+            'lastDate': scholarship.lastdate_scholarship,
+            'gender' : scholarship.gender,
+            'course' : scholarship.course,
+            'institution' : scholarship.institution,
+} for scholarship in filtered_scholarships]
 
         print("Filtered Scholarships:")
         print(scholarships_data)
@@ -73,6 +85,8 @@ def add_scholarship(request):
         gender = data.get('gender')
         course = data.get('course')
         institution = data.get('institution')
+        documents_required = data.get('documents_required')
+        website = data.get('website')
         print(scholarship_name)
         
         # Create a new scholarship object
@@ -84,7 +98,9 @@ def add_scholarship(request):
             lastdate_scholarship=lastdate_scholarship,
             gender=gender,
             course=course,
-            institution=institution
+            institution=institution,
+            documents_required=documents_required,
+            website =website
         )
 
         # Return a success response
@@ -106,7 +122,9 @@ def scholarship_detail(request, id):
             scholarship.lastdate_scholarship = data.get('lastDate', scholarship.lastdate_scholarship)
             scholarship.gender =data.get('gender',scholarship.gender)
             scholarship.course =data.get('course',scholarship.course)
-            scholarship.institution = data.get('institution',scholarship.institution)           
+            scholarship.institution = data.get('institution',scholarship.institution)
+            scholarship.documents_required = data.get('documents',scholarship.documents_required)  
+            scholarship.website = data.get('website',scholarship.website)         
             scholarship.save()
             return JsonResponse({'message': 'Scholarship updated successfully'})
         else:
@@ -120,7 +138,9 @@ def scholarship_detail(request, id):
                 "lastDate": scholarship.lastdate_scholarship,
                 "gender":scholarship.gender,
                 "course":scholarship.course,
-                "institution":scholarship.institution
+                "institution":scholarship.institution,
+                "documents":scholarship.documents_required,
+                "website":scholarship.website
             }
             return JsonResponse(data)
     except Scholarships.DoesNotExist:
@@ -152,7 +172,10 @@ def edit_scholarship(request, id):
         scholarship.gender = data.get('gender')
         scholarship.course = data.get('course')
         scholarship.institution = data.get('institution')
+        scholarship.documents_required = data.get('documents')
+        scholarship.website = data.get('website') 
         scholarship.save()
         return JsonResponse({'message': 'Scholarship updated successfully'})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+    

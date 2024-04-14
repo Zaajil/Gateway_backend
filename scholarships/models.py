@@ -25,10 +25,12 @@ class Scholarships(models.Model):
         ('outside kerala', 'Outside Kerala'),
         ('all', 'All')
     ]
-    
+    documents_required = models.CharField(max_length=100, null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     course = models.CharField(max_length=20, choices=COURSE_CHOICES)
     institution = models.CharField(max_length=20, choices=INSTITUTION_CHOICES)
+    website =models.CharField(max_length=100, blank=True ,null=True)
+
 
     def __str__(self):
         return self.scholarship_name
